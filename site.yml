@@ -14,6 +14,32 @@
      apt:
        upgrade: dist
        update_cache: yes
+
+ - hosts: all
+   become: true
+   tasks: 
+  
+   - name: create luca user
+     tags: always
+     user:
+       name: luca
+       groups: root
+
+   - name: add ssh key for luca
+     tags: always
+     authorized_key:     
+       user: luca
+       key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICV+UZBaET5vyyPbMyPHY58uIGQTvOfslUWQcpLHe/7s ansible "
+   - name: add sudeors file for luca
+     tags: always
+     copy:
+       src: sudoer_luca
+       dest: /etc/sudoers.d/luca
+       owner: root
+       group: root
+       mode: 0440  
+
+
  
  - hosts: web_servers
    become: true
