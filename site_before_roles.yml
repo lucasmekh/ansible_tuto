@@ -1,0 +1,94 @@
+---
+ 
+ - hosts: all
+   become: true
+   pre_tasks:
+ 
+   - name: install updates (CentOS)
+     dnf:
+       update_only: yes
+       update_cache: yes
+     when: ansible_distribution == "CentOS"
+ 
+   - name: install updates (Ubuntu)
+     apt:
+       upgrade: dist
+       update_cache: yes
+
+ - hosts: all
+   become: true
+   tasks: 
+  
+   - name: create luca user
+     tags: always
+     user:
+       name: luca
+       groups: root
+
+   - name: add ssh key for luca
+     tags: always
+     authorized_key:     
+       user: luca
+       key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICV+UZBaET5vyyPbMyPHY58uIGQTvOfslUWQcpLHe/7s ansible "
+   - name: add sudeors file for luca
+     tags: always
+     copy:
+       src: sudoer_luca
+       dest: /etc/sudoers.d/luca
+       owner: root
+       group: root
+       mode: 0440  
+
+
+ 
+ - hosts: web_servers
+   become: true
+   tasks:
+ 
+   - name: install httpd package (CentOS)
+     dnf:
+       name:
+         - httpd
+         - php
+       state: latest
+     when: ansible_distribution == "CentOS"
+ 
+   - name: install apache2 package (Ubuntu)
+     apt:
+       name:
+         - apache2
+         - libapache2-mod-php
+       state: latest
+     when: ansible_distribution == "Ubuntu"
+
+   - name: start apache2 
+     tags: apache,ubuntu
+     service:
+       name: apache2
+       state: started
+       enabled: yes
+     when: ansible_distribution == "Ubuntu" 
+   - name: copy default html file for site
+     tags: apache,apache2,httpd
+     copy: 
+       src: default_site.html
+       dest: /var/www/html/index.html
+       owner: root
+       group: root
+       mode: 0644  
+
+ - hosts: db_servers
+   become: true
+   tasks:
+ 
+   - name: install httpd package (CentOS)
+     dnf:
+       name: mariadb
+       state: latest
+     when: ansible_distribution == "CentOS"
+ 
+   - name: install mariadb server
+     apt:
+       name: mariadb-server
+       state: latest
+     when: ansible_distribution == "Ubuntu"
