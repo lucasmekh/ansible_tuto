@@ -6,3 +6,6 @@
 
 [file_servers]
 172.10.10.30
+
+[workstations]
+172.10.10.100
