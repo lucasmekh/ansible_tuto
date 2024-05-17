@@ -1,0 +1,10 @@
+---
+- name: Reboot all servers
+  hosts: all
+  become: yes
+  tasks:
+    - name: Reboot the server
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible playbook"
+        reboot_timeout: 600
+      when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
